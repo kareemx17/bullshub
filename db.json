@@ -1,0 +1,26 @@
+{
+    "products": [
+      {
+        "id": "1",
+        "title": "EGN lab kit",
+        "price": "free", 
+        "description": "My lab project kit which i used last semester. still like new. giving it away", 
+        "category": "project kit",
+        "image": "https://i.redd.it/x46dlbbrwn081.jpg", 
+        "owner": "Abdukarim Khusenov",
+        "email": "abdukarimkhusenov@usf.edu",
+        "instagram": "abdukarimhb"
+      }, 
+      {
+        "id": "2", 
+        "title": "Grokking algorithm book", 
+        "price": "7.0", 
+        "description": "Printed version of Grokking Algorithm book. Paper quality is good, you can read the content.",
+        "category": "books",
+        "image": "https://artemdemo.com/static/bd61bf0968541db117178677c6ea29af/dbdff/grokking-algorithms.jpg",
+        "owner": "Chaz Seitz",
+        "email": "chazs@usf.edu",
+        "instagram": "ChazSeitz"
+      }
+    ]
+  }
