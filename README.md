@@ -1,8 +1,3 @@
-# React + Vite
+# Bulls Marketplace
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+BullsMarket is a comprehensive marketplace designed to disrupt the monopoly on lab kits and books by providing college students a platform to affordably buy, sell, and exchange used lab materials. The application allows students to connect based on location, ensuring easy transactions for academic resources.
