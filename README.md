@@ -17,3 +17,4 @@ This project offers a variety of features designed to enhance the connectivity a
 - **Authentication Using OAuth**: Implements OAuth authentication to facilitate secure and straightforward user logins. This feature allows users to authenticate using existing credentials from external providers (e.g., Google, Facebook), simplifying the login process while maintaining high security and privacy standards.
 
 These features are designed to provide a seamless and secure user experience, promoting effective communication and interaction among students within the same locality.
+
