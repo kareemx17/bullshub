@@ -18,3 +18,26 @@ This project offers a variety of features designed to enhance the connectivity a
 
 These features are designed to provide a seamless and secure user experience, promoting effective communication and interaction among students within the same locality.
 
+<img src="/messages.png" alt="Homepage" />
+
+## Tech Stack
+
+This project leverages a combination of powerful technologies organized into frontend, backend, and auxiliary services. Here's how the technologies are applied across the different layers of the application:
+
+### Frontend
+- **React**: Utilized for building dynamic user interfaces and managing state across the application.
+- **React Router**: Handles the routing within the React application, allowing for seamless navigation between components without full page reloads.
+
+### Backend
+- **FastAPI**: Serves as the backend framework, providing high performance and easy-to-handle API routes with Python. It is responsible for all server-side logic including database operations and API response handling.
+- **PostgreSQL**: The primary relational database used for storing all application data including user profiles, message history, and authentication data.
+- **Socket.io**: Enables real-time bi-directional communication between the server and the client, crucial for the messaging feature.
+
+### Security
+- **OAuth**: Manages authentication processes, enabling users to sign in using their existing accounts from major providers, thereby ensuring secure and convenient user authentication.
+
+### Integrations
+- **Google Maps API**: Integrated for handling geolocation functionalities, crucial for the proximity-based user matching feature.
+
+Each component of the tech stack has been chosen not only for its performance but also for its ability to work cohesively with other technologies, ensuring a robust, scalable, and maintainable application architecture.
+
