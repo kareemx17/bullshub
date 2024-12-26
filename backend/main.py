@@ -1,3 +1,5 @@
+import models
+from database import Base, engine, SessionLocal, get_db
 from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Form, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, Integer, String, JSON
@@ -13,24 +15,13 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import timedelta, datetime
-from . import models, database
-from .database import engine, get_db
-
-# Database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-# Product model for database
-class ProductDB(Base):
-    __tablename__ = "products"
-
-    id = Column(String, primary_key=True, index=True)
-    data = Column(JSON)
+import models as models
+import database as database
+from database import engine, get_db
+from models import User, ProductDB
 
 # Create tables
-Base.metadata.create_all(bind=engine, checkfirst=True)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -102,8 +93,7 @@ async def search_products(query: Optional[str] = None, db: Session = Depends(get
 @app.on_event("startup")
 async def startup_event():
     db = SessionLocal()
-    if db.query(ProductDB).count() == 0:
-        initial_products = [
+    initial_products = [
             ProductDB(id="1", data=json.dumps({
                 "title": "EGN lab kit",
                 "price": "free",
@@ -120,9 +110,92 @@ async def startup_event():
                 "image": "https://artemdemo.com/static/bd61bf0968541db117178677c6ea29af/dbdff/grokking-algorithms.jpg",
                 "contact": "instagram:ChazSeitz"
             })),
+            ProductDB(id="3", data=json.dumps({
+                "title": "Calculus Early Transcendentals",
+                "price": "$45",
+                "description": "8th edition, James Stewart. Some highlighting but in great condition. Perfect for Calc 1-3.",
+                "category": "books",
+                "image": "https://m.media-amazon.com/images/I/91eEDkBqO-L.jpg",
+                "contact": "email:sarah.math@usf.edu"
+            })),
+            ProductDB(id="4", data=json.dumps({
+                "title": "TI-84 Plus Calculator",
+                "price": "$50",
+                "description": "Barely used TI-84 Plus graphing calculator. Comes with batteries and case.",
+                "category": "electronics",
+                "image": "https://m.media-amazon.com/images/I/71yrLllDokL._AC_UF894,1000_QL80_.jpg",
+                "contact": "instagram:calc_dealer"
+            })),
+            ProductDB(id="5", data=json.dumps({
+                "title": "Chemistry Lab Goggles",
+                "price": "$5",
+                "description": "Used for one semester only. Still in perfect condition. Required for CHM 2045L.",
+                "category": "lab equipment",
+                "image": "https://m.media-amazon.com/images/I/71y29kw+PZL.jpg",
+                "contact": "email:chem.student@usf.edu"
+            })),
+            ProductDB(id="6", data=json.dumps({
+                "title": "Physics Fundamentals",
+                "price": "$30",
+                "description": "Physics for Scientists and Engineers, 10th Edition. Some wear but all pages intact.",
+                "category": "books",
+                "image": "https://m.media-amazon.com/images/I/71HdgTLGUSL._AC_UF1000,1000_QL80_.jpg",
+                "contact": "instagram:physics_guru"
+            })),
+            ProductDB(id="7", data=json.dumps({
+                "title": "Arduino Starter Kit",
+                "price": "$25",
+                "description": "Complete Arduino kit used for EGN 3000. Includes board, sensors, and components.",
+                "category": "electronics",
+                "image": "https://m.media-amazon.com/images/I/81a-MDAmb8L.jpg",
+                "contact": "email:maker.space@usf.edu"
+            })),
+            ProductDB(id="8", data=json.dumps({
+                "title": "Study Desk",
+                "price": "$15",
+                "description": "Compact study desk, perfect for dorm room. Easy to assemble/disassemble.",
+                "category": "furniture",
+                "image": "https://m.media-amazon.com/images/I/71CkxVHzuGL._AC_UF894,1000_QL80_.jpg",
+                "contact": "instagram:dorm_deals"
+            })),
+            ProductDB(id="9", data=json.dumps({
+                "title": "Biology Lab Manual",
+                "price": "free",
+                "description": "BSC 2010L lab manual. Unused, got it for free from a friend but dropped the class.",
+                "category": "books",
+                "image": "https://m.media-amazon.com/images/I/815jJO25vdL._AC_UF1000,1000_QL80_.jpg",
+                "contact": "email:bio.student@usf.edu"
+            })),
+            ProductDB(id="10", data=json.dumps({
+                "title": "Engineering Drawing Set",
+                "price": "$12",
+                "description": "Professional drawing set with compass, rulers, and protractors. Used for EGN 3311.",
+                "category": "supplies",
+                "image": "https://m.media-amazon.com/images/I/71pO+zpB8hL.jpg",
+                "contact": "instagram:engineering_supplies"
+            })),
+            ProductDB(id="11", data=json.dumps({
+                "title": "Computer Science Notes",
+                "price": "free",
+                "description": "Complete set of typed notes for COP 3514 and COP 4530. Includes practice problems.",
+                "category": "study materials",
+                "image": "https://notesdrive.com/wp-content/uploads/2022/05/2.png",
+                "contact": "email:cs.notes@usf.edu"
+            })),
+            ProductDB(id="12", data=json.dumps({
+                "title": "Dorm Mini Fridge",
+                "price": "$40",
+                "description": "1.7 cu ft mini fridge, perfect working condition. Moving out of dorms.",
+                "category": "appliances",
+                "image": "https://dormessentials.hsa.net/cdn/shop/products/microfridge1_2568df25-de21-4eb5-8682-614dc5a3221d.jpg?v=1622426926&width=1214",
+                "contact": "instagram:dorm_essentials"
+            }))
         ]
-        db.add_all(initial_products)
-        db.commit()
+    
+    # Clear existing products and add new ones
+    db.query(ProductDB).delete()
+    db.add_all(initial_products)
+    db.commit()
     db.close()
 
 def update_existing_products(db: Session):
@@ -211,7 +284,8 @@ async def delete_product(product_id: str, db: Session = Depends(get_db)):
     
     return {"message": "Product deleted successfully"}
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Secret key to sign the JWT tokens
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -310,3 +384,17 @@ def protected(current_user: models.User = Depends(get_current_user)):
 # def get_products(Authorize: AuthJWT = Depends()):
 #     Authorize.jwt_required()
 #     # ... rest of your function
+
+@app.post("/populate-demo-data")
+async def populate_demo_data(db: Session = Depends(get_db)):
+    # Clear existing products
+    db.query(ProductDB).delete()
+    
+    initial_products = [
+        # ... paste the same products array from the startup_event ...
+    ]
+    
+    db.add_all(initial_products)
+    db.commit()
+    return {"message": "Demo data populated successfully"}
+

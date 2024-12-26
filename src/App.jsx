@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './components/Auth/AuthContext'
 
 import './App.css'
 import Header from './components/Header'
@@ -10,7 +12,7 @@ import Register from './components/Auth/Register'
 import Sell from './components/Sell/Sell'
 
 import { Home } from './components/Home'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import MessagesPage from './components/Messages/MessagesPage'
 
 // const url = 'http://localhost:3000'
 
@@ -21,7 +23,6 @@ function App() {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([])
   const [data, setData] = useState(null);
-  console.log(data)
 
 
   useEffect(() => {
@@ -87,7 +88,7 @@ function App() {
 
 
   return (
-    <>
+    <AuthProvider>
       <Router>
         <Header search={search} setSearch={setSearch}/>
         <Routes>
@@ -99,12 +100,13 @@ function App() {
           <Route path='*' element={<Missing />} />
           <Route path='/register' element={<Register />}/>
           <Route path='/sell' element={<Sell />}/>
+          <Route path='/messages' element={<MessagesPage />} />
 
         </Routes>
       </Router>
       
 
-    </>
+    </AuthProvider>
   )
 }
 

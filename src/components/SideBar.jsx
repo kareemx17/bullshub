@@ -7,7 +7,7 @@ const Sidebar = () => {
     <div className="h-screen w-44 bg-gray-800 text-white flex flex-col">
       <div className="p-6">
         <Link
-          to="/messaging"
+          to="/messages"
           className="flex items-center justify-center w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           <FaEnvelope className="mr-2" /> Messaging
@@ -29,6 +29,11 @@ const Sidebar = () => {
           <li>
             <Link to="/books" className="text-m hover:text-gray-400">
               Books
+            </Link>
+          </li>
+          <li>
+            <Link to="/dorm" className="text-m hover:text-gray-400">
+              Dorm essentials
             </Link>
           </li>
         </ul>
