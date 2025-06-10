@@ -41,3 +41,5 @@ This project leverages a combination of powerful technologies organized into fro
 
 Each component of the tech stack has been chosen not only for its performance but also for its ability to work cohesively with other technologies, ensuring a robust, scalable, and maintainable application architecture.
 
+<img src="/sell.png" alt="Homepage" />
+<img src="/signin.png" alt="Homepage" />
