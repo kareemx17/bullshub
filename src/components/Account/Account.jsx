@@ -3,6 +3,8 @@ import { useAuth } from '../Auth/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { FaUser, FaEnvelope, FaCalendar, FaEdit, FaSave, FaTimes, FaShoppingBag, FaHeart, FaEye, FaCamera } from 'react-icons/fa'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Account = () => {
   const { user, logout, refreshUser } = useAuth()
   const navigate = useNavigate()
@@ -25,7 +27,7 @@ const Account = () => {
       try {
         setLoading(true)
         const token = localStorage.getItem('token')
-        const response = await fetch('http://localhost:8000/user/profile', {
+        const response = await fetch(`${API_URL}/user/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -59,7 +61,7 @@ const Account = () => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/user/profile', {
+      const response = await fetch(`${API_URL}/user/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

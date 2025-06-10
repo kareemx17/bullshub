@@ -1,6 +1,8 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const ProductPage = ({products}) => {
     const {id} = useParams()
     const product = products.find(p => p.id === id);
@@ -13,7 +15,7 @@ const ProductPage = ({products}) => {
         if (imagePath.startsWith('http')) {
             return imagePath;
         } else {
-            return `http://localhost:8000/uploads/${imagePath}`;
+            return `${API_URL}/uploads/${imagePath}`;
         }
     }
 

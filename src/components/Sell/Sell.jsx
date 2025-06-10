@@ -3,6 +3,8 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { FaUpload, FaTag, FaDollarSign, FaUser, FaEnvelope, FaInstagram, FaCamera, FaCheckCircle } from 'react-icons/fa'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Sell = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
@@ -58,7 +60,7 @@ const Sell = () => {
     data.append('photo', formData.photo)
 
     try {
-      const response = await axios.post('http://localhost:8000/products', data, {
+      const response = await axios.post(`${API_URL}/products`, data, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

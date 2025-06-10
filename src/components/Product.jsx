@@ -1,6 +1,8 @@
 import {Link} from "react-router-dom"
 import { FaHeart, FaRegHeart, FaEye, FaMapMarkerAlt, FaTag, FaClock } from 'react-icons/fa'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Product = ({product, isFavorite, onToggleFavorite}) => {
   // Function to get the correct image URL
   const getImageUrl = (imagePath) => {
@@ -9,7 +11,7 @@ const Product = ({product, isFavorite, onToggleFavorite}) => {
       return imagePath;
     } else {
       // If it's just a filename, prepend the uploads path
-      return `http://localhost:8000/uploads/${imagePath}`;
+      return `${API_URL}/uploads/${imagePath}`;
     }
   };
 

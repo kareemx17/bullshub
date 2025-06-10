@@ -26,30 +26,51 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Add request logging middleware
-class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        print(f"Incoming request: {request.method} {request.url}")
-        print(f"Headers: {dict(request.headers)}")
-        response = await call_next(request)
-        print(f"Response status: {response.status_code}")
-        return response
+# Environment variables for deployment
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-app.add_middleware(LoggingMiddleware)
+# JWT configuration
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Enable CORS
+# Add request logging middleware (only in development)
+if ENVIRONMENT == "development":
+    class LoggingMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            print(f"Incoming request: {request.method} {request.url}")
+            print(f"Headers: {dict(request.headers)}")
+            response = await call_next(request)
+            print(f"Response status: {response.status_code}")
+            return response
+
+    app.add_middleware(LoggingMiddleware)
+
+# Enable CORS - more flexible for deployment
+allowed_origins = [
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
+]
+
+# Add frontend URL if provided
+if FRONTEND_URL and FRONTEND_URL not in allowed_origins:
+    allowed_origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Create uploads directory if it doesn't exist
+os.makedirs("uploads", exist_ok=True)
 
 # Pydantic model for API
 class Product(BaseModel):
@@ -325,16 +346,6 @@ async def delete_product(product_id: str, db: Session = Depends(get_db)):
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# Secret key to sign the JWT tokens
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-
 # Helper functions
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -392,8 +403,6 @@ def logout():
     # In a stateless JWT system, logout is typically handled client-side
     # by removing the token from storage (e.g., localStorage)
     return {"message": "Logout successful"}
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -485,12 +494,6 @@ def update_user_profile(
             "created_at": user.created_at
         }
     }
-
-# Add this to your existing routes to make them protected
-# @app.get("/products")
-# def get_products(Authorize: AuthJWT = Depends()):
-#     Authorize.jwt_required()
-#     # ... rest of your function
 
 @app.post("/populate-demo-data")
 async def populate_demo_data(db: Session = Depends(get_db)):
