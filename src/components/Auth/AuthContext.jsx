@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/users/me');
+      const response = await axios.get('http://localhost:8000/protected');
       setUser(response.data);
     } catch (error) {
       console.error('Error checking authentication:', error);
@@ -24,9 +24,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    if (token) {
+      await checkAuth();
+    }
+  };
+
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/token', 
+      const response = await axios.post('http://localhost:8000/login', 
         new URLSearchParams({ username, password }),
         { 
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -66,7 +72,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, register, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

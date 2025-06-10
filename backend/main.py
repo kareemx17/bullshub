@@ -1,7 +1,8 @@
 import models
 from database import Base, engine, SessionLocal, get_db
-from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Form, status
+from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Form, status, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import create_engine, Column, Integer, String, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -25,12 +26,28 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# Add request logging middleware
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(f"Incoming request: {request.method} {request.url}")
+        print(f"Headers: {dict(request.headers)}")
+        response = await call_next(request)
+        print(f"Response status: {response.status_code}")
+        return response
+
+app.add_middleware(LoggingMiddleware)
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -83,11 +100,31 @@ async def get_product(product_id: str, db: Session = Depends(get_db)):
 
 @app.get("/search", response_model=List[Product])
 async def search_products(query: Optional[str] = None, db: Session = Depends(get_db)):
-    if query:
-        products = db.query(ProductDB).filter(ProductDB.data['title'].astext.ilike(f"%{query}%")).all()
-    else:
-        products = db.query(ProductDB).all()
-    return [Product(id=p.id, **json.loads(p.data)) for p in products]
+    try:
+        if query:
+            # Get all products and filter in Python since JSON filtering can be unreliable in SQLite
+            all_products = db.query(ProductDB).all()
+            filtered_products = []
+            
+            for product in all_products:
+                try:
+                    data = json.loads(product.data)
+                    # Search in title, description, and category
+                    search_text = f"{data.get('title', '')} {data.get('description', '')} {data.get('category', '')}".lower()
+                    if query.lower() in search_text:
+                        filtered_products.append(Product(id=product.id, **data))
+                except json.JSONDecodeError:
+                    continue
+            
+            return filtered_products
+        else:
+            # Return all products if no query
+            products = db.query(ProductDB).all()
+            return [Product(id=p.id, **json.loads(p.data)) for p in products]
+            
+    except Exception as e:
+        print(f"Search error: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 # Optional: Add some initial data
 @app.on_event("startup")
@@ -255,7 +292,8 @@ async def create_product(
         "description": description,
         "category": category,
         "image": image_path,
-        "contact": contact
+        "contact": contact,
+        "created_at": datetime.utcnow().isoformat()
     }
 
     # Create new product
@@ -378,6 +416,75 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 @app.get("/protected")
 def protected(current_user: models.User = Depends(get_current_user)):
     return {"user": current_user.username, "message": "You are authenticated"}
+
+# User Profile Endpoints
+class UserProfileUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+
+@app.get("/user/profile")
+def get_user_profile(current_user: models.User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "bio": current_user.bio,
+        "location": current_user.location,
+        "created_at": current_user.created_at
+    }
+
+@app.put("/user/profile")
+def update_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update only provided fields
+    if profile_data.username is not None:
+        # Check if username is already taken
+        existing_user = db.query(models.User).filter(
+            models.User.username == profile_data.username,
+            models.User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        user.username = profile_data.username
+    
+    if profile_data.email is not None:
+        user.email = profile_data.email
+    
+    if profile_data.full_name is not None:
+        user.full_name = profile_data.full_name
+    
+    if profile_data.bio is not None:
+        user.bio = profile_data.bio
+    
+    if profile_data.location is not None:
+        user.location = profile_data.location
+    
+    db.commit()
+    db.refresh(user)
+    
+    return {
+        "message": "Profile updated successfully",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "bio": user.bio,
+            "location": user.location,
+            "created_at": user.created_at
+        }
+    }
 
 # Add this to your existing routes to make them protected
 # @app.get("/products")
